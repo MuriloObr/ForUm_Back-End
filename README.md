@@ -1,3 +1,9 @@
-# ForUm_Back-End
+# ForUm Back-End
 
-Readme em produção ...
+Projeto feito com as seguintes tecnologias:
+
+[![My Skills](https://skillicons.dev/icons?i=python,flask,sqlite)](https://skillicons.dev)
+
+## Link para a api
+
+Em testes...
