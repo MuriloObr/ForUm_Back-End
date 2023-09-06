@@ -1,0 +1,44 @@
+# Arquivos e diretórios a serem ignorados para projetos Python
+
+# Arquivos gerados pela execução do Python
+__pycache__/
+
+# Virtual Environment
+venv/
+env/
+
+# Arquivos de configuração da IDE (por exemplo, para o PyCharm)
+.idea/
+
+# Arquivos de registro e saída de erros
+*.log
+*.log.*
+*.pyc
+
+# Pacotes e bibliotecas instaladas
+*.egg-info/
+dist/
+build/
+lib/
+bin/
+include/
+
+# Arquivos de configuração pessoal (por exemplo, para o VSCode)
+.vscode/
+
+# Arquivos de saída de testes
+.htmlcov/
+.coverage
+
+# Arquivos de dependências gerados
+requirements.txt
+
+# Arquivos de ambiente
+.env
+
+# Ignore arquivos .DS_Store em sistemas macOS
+.DS_Store
+
+# Arquivos de cache do pip
+pip-log.txt
+pip-delete-this-directory.txt
