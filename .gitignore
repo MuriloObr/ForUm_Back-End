@@ -30,9 +30,6 @@ include/
 .htmlcov/
 .coverage
 
-# Arquivos de dependências gerados
-requirements.txt
-
 # Arquivos de ambiente
 .env
 
