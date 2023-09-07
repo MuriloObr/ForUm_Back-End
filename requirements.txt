@@ -3,7 +3,7 @@ blinker==1.5
 cffi==1.15.1
 click==7.1.2
 cryptography==3.3.2
-Flask==2.3.2
+Flask==1.1.4
 Flask-Cors==4.0.0
 greenlet==2.0.2
 itsdangerous==2.1.2
