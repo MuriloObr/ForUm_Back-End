@@ -16,6 +16,6 @@ pycparser==2.21
 PyJWT==1.7.1
 pyOpenSSL==21.0.0
 python-dotenv==0.18.0
-SQLAlchemy==2.0.19
+SQLAlchemy==1.4.49
 typing_extensions==4.7.1
 Werkzeug==2.3.6
