@@ -2,10 +2,12 @@ from database.models import User, Post, Comment, posts_likes, posts_views, comme
 from database.connect import engine
 from sqlalchemy.orm import Session
 from database.schemas import UserSchema, PostSchema, CommentSchema
-from app import secret_key
+import os
 import bcrypt
 import jwt
 import datetime as date
+
+secret_key = os.getenv("JWT_SECRET_KEY")
 
 
 def getErrorHandler(func):
