@@ -44,13 +44,12 @@ def tokenRequired(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         token = request.cookies.get("uid")
-        print("===============>", token, "<========================")
+
         if not token:
             return jsonify({"message": "Token is missing"}), 401
 
         try:
             uid_token = jwt.decode(token, secret_key, algorithms=["HS256"])
-            print(uid_token)
 
         except Exception as e:
             return jsonify({"message": str(e)}), 401
