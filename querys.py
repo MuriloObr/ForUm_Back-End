@@ -296,6 +296,12 @@ def DBcreateNewUser(session, user):
     if "@" in user["username"]:
         raise Exception("'@' char is not allowed in username")
 
+    undefined = [True for val in user.values() if val.strip() ==
+                 None or val.strip() == ""]
+    print(undefined)
+    if any(undefined):
+        return None
+
     data = User(
         username=user["username"],
         nickname=user["nickname"],
