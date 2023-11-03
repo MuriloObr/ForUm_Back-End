@@ -54,7 +54,7 @@ def DBgetUserByID(session, id):
     if not jsonData:
         return None
 
-    jsonData.pop("password")
+    # jsonData.pop("password")
 
     return jsonData
 
@@ -292,20 +292,21 @@ def DBcreateNewUser(session, user):
 
     hashPassword = bcrypt.hashpw(
         user["password"].encode("utf-8"), bcrypt.gensalt())
+    print(hashPassword)
 
     if "@" in user["username"]:
         raise Exception("'@' char is not allowed in username")
 
     undefined = [True for val in user.values() if val.strip() ==
                  None or val.strip() == ""]
-    print(undefined)
+    
     if any(undefined):
         return None
 
     data = User(
         username=user["username"],
         nickname=user["nickname"],
-        password=hashPassword,
+        password=hashPassword.decode("utf-8"),
         email=user["email"]
     )
 
@@ -340,7 +341,7 @@ def DBlogin(user_email, password):
             return {"code": 400, "res": str(e)}
 
         else:
-            if bcrypt.checkpw(password.encode("utf-8"), user.password):
+            if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
                 schema = UserSchema()
                 user_id = schema.dump(user)["id"]
 
