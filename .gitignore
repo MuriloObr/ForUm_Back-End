@@ -6,6 +6,7 @@ __pycache__/
 # Virtual Environment
 venv/
 env/
+backend/
 
 # Arquivos de configuração da IDE (por exemplo, para o PyCharm)
 .idea/
