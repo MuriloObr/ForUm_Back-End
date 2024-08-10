@@ -139,6 +139,22 @@ def DBcreateNewPost(session, post, currentUser):
 
     return schema.dump(data)
 
+@postErrorHandler
+def DBdeletePost(session, post_id, currentUser):
+    schemas = [PostSchema(), UserSchema()]
+    post = session.query(Post).get(post_id)
+    user = session.query(User).get(currentUser)
+
+    jsonPost = schemas[0].dump(post)
+    jsonUser = schemas[1].dump(user)
+    
+    session.delete(post)
+
+    return f"Post: {jsonPost['tittle']} Deleted by User: {jsonUser['username']}"
+
+    
+
+
 
 @postErrorHandler
 def DBcreateNewComment(session, comment, currentUser):

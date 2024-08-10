@@ -139,6 +139,16 @@ def createNewPost(user_id):
         return jsonify(messages[415]), 415
 
 
+@app.route("/api/posts/delete/<int:postID>", methods=["DELETE"])
+@tokenRequired
+def deletePost(user_id, postID):
+    operation = DBdeletePost(post_id=postID, currentUser=user_id)
+    code = operation["code"]
+
+    return jsonify(messages[code], operation["res"]), code
+
+
+
 @app.route("/api/posts/comment", methods=["POST"])
 @tokenRequired
 def createNewComment(user_id):
@@ -291,4 +301,4 @@ def logout(user_id):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8000)
