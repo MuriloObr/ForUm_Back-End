@@ -11,5 +11,4 @@ if dev_mode == False:
 else:
   database = getenv("DATABASE_URL_POSTGRESDEV")
 
-print(database)
-engine = create_engine(database, echo=True, client_encoding="utf8")
+engine = create_engine(database, echo=False, client_encoding="utf8")

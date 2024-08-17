@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, make_response, request, redirect
+from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
-from querys import *
+from src.post_actions import *
 from os import getenv
 from dotenv import load_dotenv
 from functools import wraps
@@ -75,7 +75,7 @@ def logged(user_id):
 
 @app.route("/api/user/<int:userID>", methods=["GET"])
 def getUserByID(userID):
-    query = DBgetUserByID(userID)
+    query = get_user_by_id(userID)
     code = query["code"]
 
     return jsonify(messages[code], query["res"]), code
@@ -84,7 +84,7 @@ def getUserByID(userID):
 @app.route("/api/profile", methods=["GET"])
 @tokenRequired
 def profile(user_id):
-    query = DBgetUserByID(user_id)
+    query = get_user_by_id(user_id)
     code = query["code"]
 
     return jsonify(messages[code], query["res"]), code
