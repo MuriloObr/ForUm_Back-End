@@ -7,9 +7,11 @@ Projeto feito com as seguintes tecnologias:
 Algumas libs que usei além são:
 
 - SqlAlchemy
+- Pydantic
 - Marshmallow
 - bcrypt
 - PyJWT
 
 ### Framework
-**Flask** (alteração do flask para fastapi em processo)
+**FastAPI** - API
+**SQLAlchemy** - ORM
