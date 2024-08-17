@@ -12,7 +12,7 @@ app = FastAPI()
 
 origins = [
     "http://25.6.211.62:5173",
-    "https://for-um-front-end.vercel.app/"
+    "https://for-um-front-end.vercel.app"
 ]
 
 app.add_middleware(
