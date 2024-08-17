@@ -12,6 +12,7 @@ app = FastAPI()
 
 origins = [
     "http://25.6.211.62:5173",
+    "https://for-um-front-end.vercel.app/"
 ]
 
 app.add_middleware(
@@ -81,10 +82,11 @@ async def getPostByID(postID: int, response: Response):
 @app.get("/api/posts")# TODO - Adicionar paginação
 def getAllPosts(response: Response):
     query = get_all_posts()
+    print(query)
     if query[0] is not None:
         if not query[0]:
             response.status_code = status.HTTP_204_NO_CONTENT
-        return query[0] if query[0] else []
+        return query[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return query[1]

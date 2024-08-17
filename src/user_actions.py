@@ -19,7 +19,7 @@ def get_user_by_id(session: Session, id: int):
     data = session.query(User).filter_by(id=id).first()
 
     if data is None:
-        return None
+        return False
 
     jsonData = schema.dump(data)
     jsonData.pop("password")
@@ -43,7 +43,7 @@ def create_new_user(session: Session, user: NewUser):
     ]
     
     if any(undefined):
-        return None
+        return False
     
     hasUsername = session.query(User).filter_by(
         username=user.username).first()
@@ -52,7 +52,7 @@ def create_new_user(session: Session, user: NewUser):
         email=user.email).first()
 
     if hasUsername or hasEmail:
-        return None
+        return False
 
     data = User(
         username=user.username,
@@ -75,8 +75,8 @@ def login_with_user_or_email(user_email: str, password: str) -> list[None|str]:
                 user = session.query(User).filter_by(
                     username=user_email).first()
 
-            if not user:
-                return [None, None]
+            if user is None:
+                return [False, None]
 
         except Exception as e:
             session.rollback()

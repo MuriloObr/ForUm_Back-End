@@ -11,10 +11,10 @@ def get_post_by_id(session: Session, id: int):
     data = session.query(Post).filter_by(id=id).first()
 
     if data is None:
-        return None
+        return False
 
     jsonData = schema.dump(data)
-    jsonData["user"] = get_user_by_id(jsonData["user"])["res"]
+    jsonData["user"] = get_user_by_id(jsonData["user"])[0]
 
     return jsonData
 
@@ -23,16 +23,16 @@ def get_post_by_id(session: Session, id: int):
 def get_all_posts(session: Session):
     schema = PostSchema()
     data = session.query(Post).all()
-
-    if data is None:
-        return None
+    print(data)
+    if data == []:
+        return False
     
     jsonData = []
     for post in data:
         jsonPost = schema.dump(post)
-        jsonPost["user"] = get_user_by_id(jsonPost["user"])["res"]
+        jsonPost["user"] = get_user_by_id(jsonPost["user"])[0]
         jsonData.append(jsonPost)
-
+    print(jsonData)
     return jsonData
 
 
@@ -41,15 +41,13 @@ def get_all_posts_from_user(session: Session, id):
     schema = PostSchema()
     data = session.query(Post).filter_by(user_id=id).all()
 
-    print(f"\033[31m {data}")
     if data == []:
-        print("here")
         return False
     
     jsonData = []
     for post in data:
         jsonPost = schema.dump(post)
-        jsonPost["user"] = get_user_by_id(jsonPost["user"])["res"]
+        jsonPost["user"] = get_user_by_id(jsonPost["user"])[0]
         jsonData.append(jsonPost)
 
     return jsonData
@@ -60,8 +58,8 @@ def create_new_post(session: Session, post: NewPost, currentUser):
     schema = PostSchema()
     user = session.query(User).get(currentUser)
 
-    if not user:
-        return None
+    if user is None:
+        return False
 
     data = Post(
         tittle=post.tittle,
@@ -101,7 +99,7 @@ def like_post(session: Session, post_id, currentUser):
 
     for like in jsonPost["likes"]:
         if like == jsonUser["id"]:
-            return None
+            return False
 
     post.likes.append(user)
 
@@ -142,7 +140,7 @@ def choose_answer(session: Session, post_id, comment_id, currentUser):
     ]
 
     if logicChain[0] or logicChain[1]:
-        return None
+        return False
 
     for anyComment in allComments:
         anyComment.answer = False
@@ -162,7 +160,7 @@ def close_or_open_post(session: Session, post_id, currentUser):
     jsonUser = schemas[1].dump(user)
 
     if jsonPost["id"] not in jsonUser["posts"]:
-        return None
+        return False
 
     post.closed = not jsonPost["closed"]
 
@@ -180,7 +178,7 @@ def view_post(session: Session, post_id, currentUser):
 
     for view in jsonPost["views"]:
         if view == jsonUser["id"]:
-            return None
+            return False
 
     post.views.append(user)
 

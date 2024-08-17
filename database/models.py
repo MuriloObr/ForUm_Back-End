@@ -79,7 +79,7 @@ class Post(Base):
     )
 
     def __repr__(self):
-        return f"[ID: {self.id} Name: {self.name} User: {self.user}  Closed: {self.closed}]"
+        return f"[ID: {self.id} Tittle: {self.tittle} User: {self.user}  Closed: {self.closed}]"
 
 
 class Comment(Base):

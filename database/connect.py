@@ -2,11 +2,11 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from os import getenv
 
-dev_mode = True
+dev_mode = False
 
 load_dotenv()
 
-if dev_mode == False:
+if not dev_mode:
   database = getenv("DATABASE_URL_POSTGRES")
 else:
   database = getenv("DATABASE_URL_POSTGRESDEV")

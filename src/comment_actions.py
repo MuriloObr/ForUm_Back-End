@@ -10,13 +10,13 @@ def get_all_comments_from_post(session, id):
     schema = CommentSchema()
     data = session.query(Comment).filter_by(post_id=id).all()
 
-    if data is None:
-        return None
+    if data == []:
+        return False
     
     jsonData = []
     for comment in data:
         jsonComment = schema.dump(comment)
-        jsonComment["user"] = get_user_by_id(jsonComment["user"])["res"]
+        jsonComment["user"] = get_user_by_id(jsonComment["user"])[0]
         jsonData.append(jsonComment)
 
     return jsonData
@@ -51,7 +51,7 @@ def like_comment(session: Session, comment_id, currentUser):
 
     for like in jsonComment["likes"]:
         if like == jsonUser["id"]:
-            return None
+            return False
 
     comment.likes.append(user)
 
