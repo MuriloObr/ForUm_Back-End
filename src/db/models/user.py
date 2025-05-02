@@ -1,4 +1,7 @@
-from sqlmodel import Field, SQLModel, Relationship
+from datetime import datetime
+from sqlmodel import Field, SQLModel, Relationship, DateTime
+from .many_to_many import PostLikeLink, PostViewLink, CommentLikeLink
+
 
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -9,18 +12,16 @@ class User(SQLModel, table=True):
     posts: list["Post"] = Relationship(back_populates="user")
     comments: list["Comment"] = Relationship(back_populates="user")
     post_views: list["Post"] = Relationship(
-        secondary=posts_views, back_populates="views"
+        back_populates="views", link_model=PostViewLink
     )
     post_likes: list["Post"] = Relationship(
-        secondary=posts_likes, back_populates="likes"
+        back_populates="likes", link_model=PostLikeLink
     )
     comment_likes: list["Comment"] = Relationship(
-        secondary=comments_likes, back_populates="likes"
+        back_populates="likes", link_model=CommentLikeLink
     )
-    created_at: [datetime.datetime] = Field(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    updated_at: [datetime.datetime] = Field(
+    created_at: datetime = Field(DateTime(timezone=True), server_default=func.now())
+    updated_at: datetime = Field(
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.current_timestamp(),
