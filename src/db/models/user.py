@@ -1,6 +1,10 @@
-from datetime import datetime
-from sqlmodel import Field, SQLModel, Relationship, DateTime
-from .many_to_many import PostLikeLink, PostViewLink, CommentLikeLink
+from datetime import datetime, timezone
+
+from sqlmodel import Field, Relationship, SQLModel
+
+from .comment import Comment
+from .many_to_many import CommentLikeLink, PostLikeLink, PostViewLink
+from .post import Post
 
 
 class User(SQLModel, table=True):
@@ -20,12 +24,5 @@ class User(SQLModel, table=True):
     comment_likes: list["Comment"] = Relationship(
         back_populates="likes", link_model=CommentLikeLink
     )
-    created_at: datetime = Field(DateTime(timezone=True), server_default=func.now())
-    updated_at: datetime = Field(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.current_timestamp(),
-    )
-
-    def __repr__(self):
-        return f"(ID: {self.id} Username: {self.username} Email: {self.email})"
+    created_at: datetime = Field(default=datetime.now(timezone.utc), nullable=False)
+    updated_at: datetime = Field(default=datetime.now(timezone.utc), nullable=False)
