@@ -1,16 +1,11 @@
-
-FROM python:3.10-alpine
+FROM python:3.13-slim
 
 WORKDIR /app
 
-COPY requirements.txt /app/requirements.txt
-
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
-
-RUN pip list
+RUN pip install poetry
 
 COPY . /app/
 
-EXPOSE 8000
+RUN poetry install --no-root
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port",  "8000"]
+ENTRYPOINT poetry run uvicorn src.main:app --workers 2 --host 0.0.0.0 --port 8000

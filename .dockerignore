@@ -1,2 +1,3 @@
-backend/
+.venv/
+.git/
 __pycache__
