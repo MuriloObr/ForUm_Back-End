@@ -28,6 +28,19 @@ Exposes API on `:5001`, Postgres on `:5432`. Reads `.env` file.
 - `utils/api_types.py` — Pydantic request/response schemas
 - `utils/error_decorators.py` — `@errorHandler` decorator that manages sessions and commits
 
+## Migrations (Alembic)
+
+Alembic uses the same env vars as the app (`ISPROD`, `POSTGRES_URL_LOCAL`, `POSTGRES_URL_PROD`).
+
+```bash
+alembic revision --autogenerate -m "description"   # generate migration from model changes
+alembic upgrade head                                # apply all pending migrations
+alembic downgrade -1                                # rollback last migration
+alembic check                                      # detect drift between models and DB
+```
+
+Alembic is configured against `database/models.py` (legacy models) for the initial baseline. When migrating to `src/db/models/`, update `alembic/env.py` to import from there instead.
+
 ## Gotchas
 
 - **`tittle` is correct** in legacy `database/models.py` — it's a DB column name. Do not "fix" to `title`.
