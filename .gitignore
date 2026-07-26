@@ -41,5 +41,3 @@ include/
 # Arquivos de cache do pip
 pip-log.txt
 pip-delete-this-directory.txt
-
-__init__.py
