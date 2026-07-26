@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from src.db.models.user import User
 from src.db.models.post import Post
 from src.db.models.comment import Comment
-from src.user_actions import get_user_by_id
+from src.user_actions import _get_user_data
 from utils.api_types import NewComment
 from utils.error_decorators import errorHandler
 
@@ -17,7 +17,7 @@ def get_all_comments_from_post(session: Session, id):
     jsonData = []
     for comment in data:
         jsonComment = comment.model_dump()
-        jsonComment["user"] = get_user_by_id(jsonComment["user_id"])[0]
+        jsonComment["user"] = _get_user_data(session, jsonComment["user_id"])
         jsonData.append(jsonComment)
 
     return jsonData
@@ -48,8 +48,8 @@ def like_comment(session: Session, comment_id, currentUser):
     jsonComment = comment.model_dump()
     jsonUser = user.model_dump()
 
-    for like in jsonComment["likes"]:
-        if like == jsonUser["id"]:
+    for like in comment.likes:
+        if like.id == jsonUser["id"]:
             return False
 
     comment.likes.append(user)

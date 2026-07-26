@@ -77,3 +77,13 @@ def logged_in_client(client, registered_user):
     })
     assert response.status_code == 200
     return client
+
+
+@pytest.fixture
+def sample_post(logged_in_client):
+    response = logged_in_client.post("/api/posts/create", json={
+        "title": "Test Post",
+        "content": "Post content here",
+    })
+    assert response.status_code == 200
+    return response.json()

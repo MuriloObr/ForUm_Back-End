@@ -12,8 +12,7 @@ secret_key = os.getenv("JWT_SECRET_KEY")
 jwt_algorithm = os.getenv("JWT_ALGORITHM")
 
 
-@errorHandler("get")
-def get_user_by_id(session: Session, id: int):
+def _get_user_data(session: Session, id: int):
     data = session.get(User, id)
 
     if data is None:
@@ -23,6 +22,11 @@ def get_user_by_id(session: Session, id: int):
     jsonData.pop("password")
 
     return jsonData
+
+
+@errorHandler("get")
+def get_user_by_id(session: Session, id: int):
+    return _get_user_data(session, id)
 
 
 @errorHandler("post")

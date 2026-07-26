@@ -120,7 +120,7 @@ def getAllCommentsFromPost(postID: int, response: Response):
 def createNewPost(uid_token: Annotated[UIDToken, Depends(token_validation)], new_post: NewPost, response: Response):
     task = create_new_post(post=new_post, currentUser=uid_token.user_id)
         
-    if task[0] is not None:
+    if task[0]:
             return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -131,7 +131,7 @@ def createNewPost(uid_token: Annotated[UIDToken, Depends(token_validation)], new
 def deletePost(uid_token: Annotated[UIDToken, Depends(token_validation)], postID: int, response: Response):
     task = delete_post(post_id=postID, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -142,7 +142,7 @@ def deletePost(uid_token: Annotated[UIDToken, Depends(token_validation)], postID
 def createNewComment(uid_token: Annotated[UIDToken, Depends(token_validation)], new_comment: NewComment, response: Response):
     task = create_new_comment(comment=new_comment, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -154,7 +154,7 @@ def likePost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_ref
     task = like_post(
         post_id=post_ref.post_id, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -166,7 +166,7 @@ def unlikePost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_r
     task = rm_like_post(
         post_id=post_ref.post_id, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -178,7 +178,7 @@ def likeComment(uid_token: Annotated[UIDToken, Depends(token_validation)], comme
     task = like_comment(
         comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -190,7 +190,7 @@ def unlikeComment(uid_token: Annotated[UIDToken, Depends(token_validation)], com
     task = rm_like_comment(
         comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -205,7 +205,7 @@ def bestComment(uid_token: Annotated[UIDToken, Depends(token_validation)], best_
         currentUser=uid_token.user_id
     )
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -216,7 +216,7 @@ def bestComment(uid_token: Annotated[UIDToken, Depends(token_validation)], best_
 def viewPost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_ref: PostRef, response: Response):
     task = view_post(post_id=post_ref.post_id, currentUser=uid_token.user_id)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -230,7 +230,7 @@ def closeOpenPost(uid_token: Annotated[UIDToken, Depends(token_validation)], pos
         currentUser=uid_token.user_id
     )
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -241,7 +241,7 @@ def closeOpenPost(uid_token: Annotated[UIDToken, Depends(token_validation)], pos
 def createNewUser(new_user: NewUser, response: Response):
     task = create_new_user(new_user)
 
-    if task[0] is not None:
+    if task[0]:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -252,7 +252,7 @@ def createNewUser(new_user: NewUser, response: Response):
 def login(user: UserPayload, response: Response):
     task = login_with_user_or_email(user.user, user.password)
 
-    if task[0] is not None:
+    if task[0]:
         response.set_cookie(
         key="uid",
         value=task[0],

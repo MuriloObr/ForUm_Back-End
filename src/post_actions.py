@@ -2,7 +2,7 @@ from sqlmodel import Session, select
 from src.db.models.user import User
 from src.db.models.post import Post
 from src.db.models.comment import Comment
-from src.user_actions import get_user_by_id
+from src.user_actions import _get_user_data
 from utils.api_types import NewPost
 from utils.error_decorators import errorHandler
 
@@ -15,7 +15,7 @@ def get_post_by_id(session: Session, id: int):
         return False
 
     jsonData = data.model_dump()
-    jsonData["user"] = get_user_by_id(jsonData["user_id"])[0]
+    jsonData["user"] = _get_user_data(session, jsonData["user_id"])
 
     return jsonData
 
@@ -30,7 +30,7 @@ def get_all_posts(session: Session):
     jsonData = []
     for post in data:
         jsonPost = post.model_dump()
-        jsonPost["user"] = get_user_by_id(jsonPost["user_id"])[0]
+        jsonPost["user"] = _get_user_data(session, jsonPost["user_id"])
         jsonData.append(jsonPost)
 
     return jsonData
@@ -46,7 +46,7 @@ def get_all_posts_from_user(session: Session, id):
     jsonData = []
     for post in data:
         jsonPost = post.model_dump()
-        jsonPost["user"] = get_user_by_id(jsonPost["user_id"])[0]
+        jsonPost["user"] = _get_user_data(session, jsonPost["user_id"])
         jsonData.append(jsonPost)
 
     return jsonData
@@ -70,7 +70,7 @@ def create_new_post(session: Session, post: NewPost, currentUser):
     session.flush()
 
     jsonData = data.model_dump()
-    jsonData["user"] = get_user_by_id(jsonData["user_id"])[0]
+    jsonData["user"] = _get_user_data(session, jsonData["user_id"])
 
     return jsonData
 
@@ -96,8 +96,8 @@ def like_post(session: Session, post_id, currentUser):
     jsonPost = post.model_dump()
     jsonUser = user.model_dump()
 
-    for like in jsonPost["likes"]:
-        if like == jsonUser["id"]:
+    for like in post.likes:
+        if like.id == jsonUser["id"]:
             return False
 
     post.likes.append(user)
@@ -165,8 +165,8 @@ def view_post(session: Session, post_id, currentUser):
     jsonPost = post.model_dump()
     jsonUser = user.model_dump()
 
-    for view in jsonPost["views"]:
-        if view == jsonUser["id"]:
+    for view in post.views:
+        if view.id == jsonUser["id"]:
             return False
 
     post.views.append(user)
