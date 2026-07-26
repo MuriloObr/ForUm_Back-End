@@ -1,7 +1,7 @@
 import jwt
 from os import getenv
 from typing import Annotated, Union
-from fastapi import FastAPI, Cookie,Depends, Request, Response, status
+from fastapi import FastAPI, Cookie,Depends, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from src.comment_actions import create_new_comment, get_all_comments_from_post, like_comment, rm_like_comment
 from src.post_actions import choose_answer, close_or_open_post, create_new_post, delete_post, get_all_posts, get_all_posts_from_user, get_post_by_id, like_post, rm_like_post, view_post
@@ -27,13 +27,13 @@ secret_key = getenv("JWT_SECRET_KEY")
 
 def token_validation(uid: Union[str, None] = Cookie(None)):
     if not uid:
-        return {"message": "Token is missing"}
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing")
 
     try:
       uid_token = jwt.decode(uid, secret_key, algorithms=["HS256"])
       return UIDToken.model_validate(uid_token)
     except Exception as e:
-        return f"Error: {e}"
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Error: {e}")
 
 @app.get("/")
 async def read_root():
@@ -256,8 +256,7 @@ def login(user: UserPayload, response: Response):
         response.set_cookie(
         key="uid",
         value=task[0],
-        secure=True,
-        samesite="none"
+        samesite="lax"
         )
         return { "message": "Cookies!" }
     else:

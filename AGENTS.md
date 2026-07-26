@@ -41,6 +41,15 @@ alembic check                                      # detect drift between models
 
 Alembic is configured against `src/db/models/` for autogenerate.
 
+## Tests
+
+```bash
+uv run pytest -v                    # run all tests
+uv run pytest tests/test_auth.py   # run auth tests only
+```
+
+Uses SQLite in-memory for tests. No PostgreSQL required.
+
 ## Gotchas
 
 - The `@errorHandler("post")` decorator auto-commits; `"get"` does not. Route handlers return `[data, error]` tuples.

@@ -1,6 +1,4 @@
-from __future__ import annotations
-
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -20,20 +18,20 @@ class User(SQLModel, table=True):
     username: str = Field(nullable=False)
     password: str = Field(nullable=False)
     email: str = Field(nullable=False)
-    posts: list[Post] = Relationship(back_populates="user")
-    comments: list[Comment] = Relationship(back_populates="user")
-    post_views: list[Post] = Relationship(
+    posts: list["Post"] = Relationship(back_populates="user")
+    comments: list["Comment"] = Relationship(back_populates="user")
+    post_views: list["Post"] = Relationship(
         back_populates="views", link_model=PostViewLink
     )
-    post_likes: list[Post] = Relationship(
+    post_likes: list["Post"] = Relationship(
         back_populates="likes", link_model=PostLikeLink
     )
-    comment_likes: list[Comment] = Relationship(
+    comment_likes: list["Comment"] = Relationship(
         back_populates="likes", link_model=CommentLikeLink
     )
     created_at: datetime = Field(
-        sa_column_kwargs={"server_default": "now()"}
+        default_factory=lambda: datetime.now(timezone.utc)
     )
     updated_at: datetime = Field(
-        sa_column_kwargs={"server_default": "now()", "onupdate": "now()"}
+        default_factory=lambda: datetime.now(timezone.utc)
     )

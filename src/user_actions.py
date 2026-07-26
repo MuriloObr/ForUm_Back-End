@@ -17,7 +17,7 @@ def get_user_by_id(session: Session, id: int):
     data = session.get(User, id)
 
     if data is None:
-        return False
+        return None
 
     jsonData = data.model_dump()
     jsonData.pop("password")
@@ -41,7 +41,7 @@ def create_new_user(session: Session, user: NewUser):
     ]
 
     if any(undefined):
-        return False
+        return None
 
     hasUsername = session.exec(
         select(User).where(User.username == user.username)
@@ -52,7 +52,7 @@ def create_new_user(session: Session, user: NewUser):
     ).first()
 
     if hasUsername or hasEmail:
-        return False
+        return None
 
     data = User(
         username=user.username,
@@ -79,7 +79,7 @@ def login_with_user_or_email(user_email: str, password: str) -> list[None | str]
                 ).first()
 
             if user is None:
-                return [False, None]
+                return [None, None]
 
         except Exception as e:
             session.rollback()

@@ -12,8 +12,7 @@ def errorHandler(method: str):
 
                 except Exception as e:
                     session.rollback()
-                    raise e
-                    return [None, e]
+                    return [None, str(e)]
                 else:
                     if method == "post":
                         session.commit()
