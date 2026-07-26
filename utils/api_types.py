@@ -9,7 +9,7 @@ class PostRef(BaseModel):
     post_id: int
 
 class NewPost(BaseModel):
-    tittle: str
+    title: str
     content: str
 
 class CommentRef(BaseModel):

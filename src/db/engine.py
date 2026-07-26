@@ -18,6 +18,4 @@ url = getenv("POSTGRES_URL_LOCAL", default="")
 if isProd:
     url = getenv("POSTGRES_URL_PROD", default="")
 
-engine = create_engine(url, echo=True)
-
-SQLModel.metadata.create_all(engine)
+engine = create_engine(url, echo=False)

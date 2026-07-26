@@ -1,22 +1,23 @@
-from database.models import User, Post, Comment
-from database.schemas import UserSchema, CommentSchema
+from sqlmodel import Session, select
+from src.db.models.user import User
+from src.db.models.post import Post
+from src.db.models.comment import Comment
 from src.user_actions import get_user_by_id
 from utils.api_types import NewComment
 from utils.error_decorators import errorHandler
-from sqlalchemy.orm import Session
+
 
 @errorHandler("get")
-def get_all_comments_from_post(session, id):
-    schema = CommentSchema()
-    data = session.query(Comment).filter_by(post_id=id).all()
+def get_all_comments_from_post(session: Session, id):
+    data = session.exec(select(Comment).where(Comment.post_id == id)).all()
 
-    if data == []:
+    if not data:
         return False
-    
+
     jsonData = []
     for comment in data:
-        jsonComment = schema.dump(comment)
-        jsonComment["user"] = get_user_by_id(jsonComment["user"])[0]
+        jsonComment = comment.model_dump()
+        jsonComment["user"] = get_user_by_id(jsonComment["user_id"])[0]
         jsonData.append(jsonComment)
 
     return jsonData
@@ -24,30 +25,28 @@ def get_all_comments_from_post(session, id):
 
 @errorHandler("post")
 def create_new_comment(session: Session, comment: NewComment, currentUser):
-    schema = CommentSchema()
-    user = session.query(User).get(currentUser)
-    post = session.query(Post).get(comment.post_id)
+    user = session.get(User, currentUser)
+    post = session.get(Post, comment.post_id)
 
     data = Comment(
         content=comment.content,
-        answer=False,
         user=user,
         post=post
     )
 
     session.add(data)
+    session.flush()
 
-    return schema.dump(data)
+    return data.model_dump()
 
 
 @errorHandler("post")
 def like_comment(session: Session, comment_id, currentUser):
-    schemas = [CommentSchema(), UserSchema()]
-    comment = session.query(Comment).get(comment_id)
-    user = session.query(User).get(currentUser)
+    comment = session.get(Comment, comment_id)
+    user = session.get(User, currentUser)
 
-    jsonComment = schemas[0].dump(comment)
-    jsonUser = schemas[1].dump(user)
+    jsonComment = comment.model_dump()
+    jsonUser = user.model_dump()
 
     for like in jsonComment["likes"]:
         if like == jsonUser["id"]:
@@ -59,13 +58,12 @@ def like_comment(session: Session, comment_id, currentUser):
 
 
 @errorHandler("post")
-def rm_like_comment(session, comment_id, currentUser):
-    schemas = [CommentSchema(), UserSchema()]
-    comment = session.query(Comment).get(comment_id)
-    user = session.query(User).get(currentUser)
+def rm_like_comment(session: Session, comment_id, currentUser):
+    comment = session.get(Comment, comment_id)
+    user = session.get(User, currentUser)
 
-    jsonComment = schemas[0].dump(comment)
-    jsonUser = schemas[1].dump(user)
+    jsonComment = comment.model_dump()
+    jsonUser = user.model_dump()
 
     comment.likes.remove(user)
 

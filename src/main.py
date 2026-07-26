@@ -149,36 +149,52 @@ def createNewComment(uid_token: Annotated[UIDToken, Depends(token_validation)], 
     return task[1]
 
 
-@app.route("/api/posts/like", methods=["POST", "DELETE"])
-def likePost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_ref: PostRef, request: Request, response: Response):
-    if (request.method == "POST"):
-        task = like_post(
-            post_id=post_ref.post_id, currentUser=uid_token.user_id)
-    elif (request.method == "DELETE"):
-        task = rm_like_post(
-            post_id=post_ref.post_id, currentUser=uid_token.user_id)
+@app.post("/api/posts/like")
+def likePost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_ref: PostRef, response: Response):
+    task = like_post(
+        post_id=post_ref.post_id, currentUser=uid_token.user_id)
 
     if task[0] is not None:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    return task[1]
+        return task[1]
 
 
-@app.route("/api/comments/like", methods=["POST", "DELETE"])
-def likeComment(uid_token: Annotated[UIDToken, Depends(token_validation)], comment_ref: CommentRef, request: Request, response: Response):
-    if (request.method == "POST"):
-        task = like_comment(
-            comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
-    elif (request.method == "DELETE"):
-        task = rm_like_comment(
-            comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
+@app.delete("/api/posts/like")
+def unlikePost(uid_token: Annotated[UIDToken, Depends(token_validation)], post_ref: PostRef, response: Response):
+    task = rm_like_post(
+        post_id=post_ref.post_id, currentUser=uid_token.user_id)
 
     if task[0] is not None:
         return task[0]
     else:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-    return task[1]
+        return task[1]
+
+
+@app.post("/api/comments/like")
+def likeComment(uid_token: Annotated[UIDToken, Depends(token_validation)], comment_ref: CommentRef, response: Response):
+    task = like_comment(
+        comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
+
+    if task[0] is not None:
+        return task[0]
+    else:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return task[1]
+
+
+@app.delete("/api/comments/like")
+def unlikeComment(uid_token: Annotated[UIDToken, Depends(token_validation)], comment_ref: CommentRef, response: Response):
+    task = rm_like_comment(
+        comment_id=comment_ref.comment_id, currentUser=uid_token.user_id)
+
+    if task[0] is not None:
+        return task[0]
+    else:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return task[1]
 
 
 @app.put("/api/comments/best")
