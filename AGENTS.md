@@ -9,15 +9,18 @@ uv sync                  # install deps
 uv run uvicorn src.main:app --reload   # dev server on :8000
 ```
 
-Requires `.env` with: `JWT_SECRET_KEY`, `JWT_ALGORITHM`, `POSTGRES_URL_LOCAL`, `POSTGRES_URL_PROD`, `ISPROD`.
+Requires `.env` with: `DATABASE_URL`, `JWT_SECRET_KEY`, `JWT_ALGORITHM`.
 
 ## Docker
 
 ```bash
-docker compose up --build
+docker compose up --build                        # dev (hot-reload)
+docker compose --profile test up --build         # run tests in container
+docker compose --profile prod up --build         # production-like local
 ```
 
 Exposes API on `:5001`, Postgres on `:5432`. Reads `.env` file.
+Entrypoint runs `alembic upgrade head` before starting uvicorn.
 
 ## Architecture
 
@@ -27,10 +30,12 @@ Exposes API on `:5001`, Postgres on `:5432`. Reads `.env` file.
 - `src/db/engine.py` — engine and env var config
 - `utils/api_types.py` — Pydantic request/response schemas
 - `utils/error_decorators.py` — `@errorHandler` decorator that manages sessions and commits
+- `entrypoint.sh` — Docker entrypoint: runs migrations then uvicorn
+- `Dockerfile` — Multi-stage: `builder` → `runtime` (prod) / `test`
 
 ## Migrations (Alembic)
 
-Alembic uses the same env vars as the app (`ISPROD`, `POSTGRES_URL_LOCAL`, `POSTGRES_URL_PROD`).
+Alembic reads `DATABASE_URL` from the environment (or `.env` via python-dotenv).
 
 ```bash
 alembic revision --autogenerate -m "description"   # generate migration from model changes
@@ -53,6 +58,7 @@ Uses SQLite in-memory for tests. No PostgreSQL required.
 ## Gotchas
 
 - The `@errorHandler("post")` decorator auto-commits; `"get"` does not. Route handlers return `[data, error]` tuples.
-- No test suite, linter, or formatter is configured. There is nothing to run for verification beyond starting the server.
+- Never call `@errorHandler`-decorated functions from within another `@errorHandler` block — nested sessions on `StaticPool` cause silent rollbacks. Use `_get_user_data()` instead of `get_user_by_id()` for inline user lookups.
+- `model_dump()` does not include relationship fields (`likes`, `views`). Iterate ORM attributes directly.
 - All models use `__tablename__` to match the plural DB table names (`users`, `posts`, `comments`, `posts_likes`, `posts_views`, `comments_likes`).
 - Post tracks its answer via `answer_id: int | None` FK to `comments.id` (not a boolean on Comment).

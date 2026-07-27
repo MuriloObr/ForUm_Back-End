@@ -21,12 +21,7 @@ if config.config_file_name is not None:
 
 target_metadata = SQLModel.metadata
 
-is_prod = getenv("ISPROD", default="").lower() in ("true", "1", "yes")
-
-if is_prod:
-    url = getenv("POSTGRES_URL_PROD", default="")
-else:
-    url = getenv("POSTGRES_URL_LOCAL", default="")
+url = getenv("DATABASE_URL", default="sqlite://")
 
 config.set_main_option("sqlalchemy.url", url)
 

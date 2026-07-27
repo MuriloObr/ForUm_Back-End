@@ -2,9 +2,7 @@ import os
 
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-testing"
 os.environ["JWT_ALGORITHM"] = "HS256"
-os.environ["POSTGRES_URL_LOCAL"] = "sqlite://"
-os.environ["POSTGRES_URL_PROD"] = "sqlite://"
-os.environ["ISPROD"] = ""
+os.environ["DATABASE_URL"] = "sqlite://"
 
 import pytest
 from sqlmodel import SQLModel, Session, create_engine

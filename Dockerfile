@@ -1,11 +1,48 @@
-FROM python:3.13-slim
+# ---------------------------------------------------------------------------
+# Stage 1: builder — install all dependencies (prod + test)
+# ---------------------------------------------------------------------------
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS builder
 
 WORKDIR /app
 
-RUN pip install poetry
+COPY pyproject.toml uv.lock README.md ./
 
-COPY . /app/
+RUN uv sync --frozen --no-install-project
 
-RUN poetry install --no-root
+COPY src/ src/
+COPY utils/ utils/
+COPY alembic/ alembic/
+COPY alembic.ini ./
+COPY tests/ tests/
 
-ENTRYPOINT poetry run uvicorn src.main:app --workers 2 --host 0.0.0.0 --port 8000
+RUN uv sync --frozen --extra test
+
+# ---------------------------------------------------------------------------
+# Stage 2: runtime — production image (no test code)
+# ---------------------------------------------------------------------------
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS runtime
+
+WORKDIR /app
+
+COPY --from=builder /app/.venv /app/.venv
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+COPY src/ src/
+COPY utils/ utils/
+COPY alembic/ alembic/
+COPY alembic.ini ./
+COPY entrypoint.sh ./
+
+RUN chmod +x entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["./entrypoint.sh"]
+
+# ---------------------------------------------------------------------------
+# Stage 3: test — runs pytest
+# ---------------------------------------------------------------------------
+FROM builder AS test
+
+CMD ["uv", "run", "pytest", "-v"]

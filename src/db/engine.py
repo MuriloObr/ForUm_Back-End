@@ -11,11 +11,6 @@ dotenv_path = find_dotenv(".env")
 
 load_dotenv()
 
-isProd = getenv("ISPROD", default=False)
-
-url = getenv("POSTGRES_URL_LOCAL", default="")
-
-if isProd:
-    url = getenv("POSTGRES_URL_PROD", default="")
+url = getenv("DATABASE_URL", default="sqlite://")
 
 engine = create_engine(url, echo=False)

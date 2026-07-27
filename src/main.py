@@ -10,10 +10,8 @@ from utils.api_types import BestCommentRef, CommentRef, NewComment, NewPost, New
 
 app = FastAPI()
 
-origins = [
-    "http://25.6.211.62:5173",
-    "https://for-um-front-end.vercel.app"
-]
+cors_raw = getenv("CORS_ORIGINS", "")
+origins = [o.strip() for o in cors_raw.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
