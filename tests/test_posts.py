@@ -51,7 +51,7 @@ class TestPostLikes:
             "post_id": sample_post["id"],
         })
         assert response.status_code == 200
-        assert "Liked" in response.json()
+        assert "Liked" in response.json()["message"]
 
     def test_unlike_post(self, logged_in_client, sample_post):
         logged_in_client.post("/api/posts/like", json={
@@ -61,7 +61,7 @@ class TestPostLikes:
             "post_id": sample_post["id"],
         })
         assert response.status_code == 200
-        assert "Like Removed" in response.json()
+        assert "Like Removed" in response.json()["message"]
 
     def test_duplicate_like(self, logged_in_client, sample_post):
         logged_in_client.post("/api/posts/like", json={
@@ -100,7 +100,7 @@ class TestPostAnswer:
             "comment_id": comment_id,
         })
         assert response.status_code == 200
-        assert "answer set" in response.json()
+        assert "answer set" in response.json()["message"]
 
     def test_non_owner_cannot_mark_answer(self, logged_in_client, sample_post):
         post_id = sample_post["id"]
@@ -128,7 +128,7 @@ class TestPostClose:
             "post_id": sample_post["id"],
         })
         assert response.status_code == 200
-        assert "True" in response.json()
+        assert "True" in response.json()["message"]
 
     def test_non_owner_cannot_close(self, logged_in_client, sample_post):
         from fastapi.testclient import TestClient

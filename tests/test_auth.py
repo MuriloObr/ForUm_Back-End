@@ -10,7 +10,7 @@ class TestRegister:
             "password": "pass123",
         })
         assert response.status_code == 200
-        assert "Created" in response.json()
+        assert "Created" in response.json()["message"]
 
     def test_register_duplicate_username(self, client, registered_user):
         response = client.post("/api/register", json={

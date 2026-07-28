@@ -96,7 +96,7 @@ class TestCommentLikes:
             "comment_id": sample_comment["id"],
         })
         assert response.status_code == 200
-        assert "Liked" in response.json()
+        assert "Liked" in response.json()["message"]
 
     def test_unlike_comment(self, logged_in_client, sample_comment):
         logged_in_client.post("/api/comments/like", json={
@@ -106,7 +106,7 @@ class TestCommentLikes:
             "comment_id": sample_comment["id"],
         })
         assert response.status_code == 200
-        assert "Like Removed" in response.json()
+        assert "Like Removed" in response.json()["message"]
 
     def test_duplicate_like_comment(self, logged_in_client, sample_comment):
         logged_in_client.post("/api/comments/like", json={
