@@ -1,7 +1,6 @@
-from database.models import User
-from database.connect import engine
-from sqlalchemy.orm import Session
-from database.schemas import UserSchema
+from sqlmodel import Session, select
+from src.db.models.user import User
+from src.db.engine import engine
 from utils.api_types import NewUser
 from utils.error_decorators import errorHandler
 import os
@@ -13,18 +12,21 @@ secret_key = os.getenv("JWT_SECRET_KEY")
 jwt_algorithm = os.getenv("JWT_ALGORITHM")
 
 
-@errorHandler("get")
-def get_user_by_id(session: Session, id: int):
-    schema = UserSchema()
-    data = session.query(User).filter_by(id=id).first()
+def _get_user_data(session: Session, id: int):
+    data = session.get(User, id)
 
     if data is None:
-        return False
+        return None
 
-    jsonData = schema.dump(data)
+    jsonData = data.model_dump()
     jsonData.pop("password")
 
     return jsonData
+
+
+@errorHandler("get")
+def get_user_by_id(session: Session, id: int):
+    return _get_user_data(session, id)
 
 
 @errorHandler("post")
@@ -38,21 +40,23 @@ def create_new_user(session: Session, user: NewUser):
         raise Exception("'@' char is not allowed in username")
 
     undefined = [
-        True for val in user.model_dump().values() 
+        True for val in user.model_dump().values()
         if val.strip() is None or val.strip() == ""
     ]
-    
-    if any(undefined):
-        return False
-    
-    hasUsername = session.query(User).filter_by(
-        username=user.username).first()
 
-    hasEmail = session.query(User).filter_by(
-        email=user.email).first()
+    if any(undefined):
+        return None
+
+    hasUsername = session.exec(
+        select(User).where(User.username == user.username)
+    ).first()
+
+    hasEmail = session.exec(
+        select(User).where(User.email == user.email)
+    ).first()
 
     if hasUsername or hasEmail:
-        return False
+        return None
 
     data = User(
         username=user.username,
@@ -66,17 +70,20 @@ def create_new_user(session: Session, user: NewUser):
     return f"User: {data.username} Created"
 
 
-def login_with_user_or_email(user_email: str, password: str) -> list[None|str]:
+def login_with_user_or_email(user_email: str, password: str) -> list[None | str]:
     with Session(engine) as session:
         try:
             if "@" in user_email:
-                user = session.query(User).filter_by(email=user_email).first()
+                user = session.exec(
+                    select(User).where(User.email == user_email)
+                ).first()
             else:
-                user = session.query(User).filter_by(
-                    username=user_email).first()
+                user = session.exec(
+                    select(User).where(User.username == user_email)
+                ).first()
 
             if user is None:
-                return [False, None]
+                return [None, None]
 
         except Exception as e:
             session.rollback()
@@ -84,11 +91,8 @@ def login_with_user_or_email(user_email: str, password: str) -> list[None|str]:
 
         else:
             if bcrypt.checkpw(password.encode("utf-8"), user.password.encode("utf-8")):
-                schema = UserSchema()
-                user_id = schema.dump(user)["id"]
-
                 token = jwt.encode({
-                    "user_id": user_id,
+                    "user_id": user.id,
                     "exp": date.datetime.now() + date.timedelta(hours=12)
                 }, secret_key, algorithm=jwt_algorithm)
 

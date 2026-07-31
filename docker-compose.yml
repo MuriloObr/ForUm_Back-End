@@ -1,19 +1,6 @@
 name: "ForUm_BackEnd"
-services:
-  webapp:
-    image: fastapi_webapp:latest
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
-    ports:
-      - "5001:8000"
-    networks:
-      - app-tier
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      - db
 
+services:
   db:
     image: postgres:latest
     ports:
@@ -22,19 +9,58 @@ services:
       - app-tier
     environment:
       POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: 12345
+      POSTGRES_PASSWORD: "12345"
       POSTGRES_DB: mydata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U myuser -d mydata"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  webapp:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - "8000:5001"
+    networks:
+      - app-tier
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/app/src
+      - ./utils:/app/utils
+      - ./alembic:/app/alembic
+    command:
+      [
+        "uv",
+        "run",
+        "uvicorn",
+        "src.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
+
+  test:
+    build:
+      context: .
+      target: test
+    networks:
+      - app-tier
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - test
+
 networks:
   app-tier:
     driver: bridge
-
-volumes:
-  postgres_data:

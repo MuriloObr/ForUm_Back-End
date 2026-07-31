@@ -1,53 +1,52 @@
-from database.models import User, Post, Comment
-from database.schemas import UserSchema, PostSchema, CommentSchema
-from src.user_actions import get_user_by_id
+from sqlmodel import Session, select
+from src.db.models.user import User
+from src.db.models.post import Post
+from src.db.models.comment import Comment
+from src.user_actions import _get_user_data
 from utils.api_types import NewPost
 from utils.error_decorators import errorHandler
-from sqlalchemy.orm import Session
+
 
 @errorHandler("get")
 def get_post_by_id(session: Session, id: int):
-    schema = PostSchema()
-    data = session.query(Post).filter_by(id=id).first()
+    data = session.get(Post, id)
 
     if data is None:
         return False
 
-    jsonData = schema.dump(data)
-    jsonData["user"] = get_user_by_id(jsonData["user"])[0]
+    jsonData = data.model_dump()
+    jsonData["user"] = _get_user_data(session, jsonData["user_id"])
 
     return jsonData
 
 
 @errorHandler("get")
 def get_all_posts(session: Session):
-    schema = PostSchema()
-    data = session.query(Post).all()
-    print(data)
-    if data == []:
+    data = session.exec(select(Post)).all()
+
+    if not data:
         return False
-    
+
     jsonData = []
     for post in data:
-        jsonPost = schema.dump(post)
-        jsonPost["user"] = get_user_by_id(jsonPost["user"])[0]
+        jsonPost = post.model_dump()
+        jsonPost["user"] = _get_user_data(session, jsonPost["user_id"])
         jsonData.append(jsonPost)
-    print(jsonData)
+
     return jsonData
 
 
 @errorHandler("get")
 def get_all_posts_from_user(session: Session, id):
-    schema = PostSchema()
-    data = session.query(Post).filter_by(user_id=id).all()
+    data = session.exec(select(Post).where(Post.user_id == id)).all()
 
-    if data == []:
+    if not data:
         return False
-    
+
     jsonData = []
     for post in data:
-        jsonPost = schema.dump(post)
-        jsonPost["user"] = get_user_by_id(jsonPost["user"])[0]
+        jsonPost = post.model_dump()
+        jsonPost["user"] = _get_user_data(session, jsonPost["user_id"])
         jsonData.append(jsonPost)
 
     return jsonData
@@ -55,131 +54,121 @@ def get_all_posts_from_user(session: Session, id):
 
 @errorHandler("post")
 def create_new_post(session: Session, post: NewPost, currentUser):
-    schema = PostSchema()
-    user = session.query(User).get(currentUser)
+    user = session.get(User, currentUser)
 
     if user is None:
         return False
 
     data = Post(
-        tittle=post.tittle,
+        title=post.title,
         content=post.content,
-        closed=False,
+        is_closed=False,
         user=user,
     )
 
     session.add(data)
+    session.flush()
 
-    return schema.dump(data)
+    jsonData = data.model_dump()
+    jsonData["user"] = _get_user_data(session, jsonData["user_id"])
+
+    return jsonData
 
 
 @errorHandler("post")
 def delete_post(session: Session, post_id, currentUser):
-    schemas = [PostSchema(), UserSchema()]
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    user = session.get(User, currentUser)
 
-    jsonPost = schemas[0].dump(post)
-    jsonUser = schemas[1].dump(user)
-    
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
+
     session.delete(post)
 
-    return f"Post: {jsonPost['tittle']} Deleted by User: {jsonUser['username']}"
-
+    return f"Post: {jsonPost['title']} Deleted by User: {jsonUser['username']}"
 
 
 @errorHandler("post")
 def like_post(session: Session, post_id, currentUser):
-    schemas = [PostSchema(), UserSchema()]
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    user = session.get(User, currentUser)
 
-    jsonPost = schemas[0].dump(post)
-    jsonUser = schemas[1].dump(user)
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
 
-    for like in jsonPost["likes"]:
-        if like == jsonUser["id"]:
+    for like in post.likes:
+        if like.id == jsonUser["id"]:
             return False
 
     post.likes.append(user)
 
-    return f"Post: {jsonPost['tittle']} Liked by User: {jsonUser['username']}"
+    return f"Post: {jsonPost['title']} Liked by User: {jsonUser['username']}"
 
 
 @errorHandler("post")
 def rm_like_post(session: Session, post_id, currentUser):
-    schemas = [PostSchema(), UserSchema()]
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    user = session.get(User, currentUser)
 
-    jsonPost = schemas[0].dump(post)
-    jsonUser = schemas[1].dump(user)
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
 
     post.likes.remove(user)
 
-    return f"Post: {jsonPost['tittle']} Like Removed by User: {jsonUser['username']}"
-
+    return f"Post: {jsonPost['title']} Like Removed by User: {jsonUser['username']}"
 
 
 @errorHandler("post")
 def choose_answer(session: Session, post_id, comment_id, currentUser):
-    schemas = [CommentSchema(), PostSchema(), UserSchema()]
-    comment = session.query(Comment).get(comment_id)
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    comment = session.get(Comment, comment_id)
+    user = session.get(User, currentUser)
 
-    allComments = session.query(Comment).all()
-
-    jsonComment = schemas[0].dump(comment)
-    jsonPost = schemas[1].dump(post)
-    jsonUser = schemas[2].dump(user)
-
-    logicChain = [
-        jsonPost["id"] not in jsonUser["posts"],
-        jsonComment["id"] not in jsonPost["comments"],
-    ]
-
-    if logicChain[0] or logicChain[1]:
+    if post is None or comment is None or user is None:
         return False
 
-    for anyComment in allComments:
-        anyComment.answer = False
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
 
-    comment.answer = True
+    if jsonPost["user_id"] != jsonUser["id"]:
+        return False
 
-    return f"Post: {jsonComment['id']} is now {jsonComment['answer']}"
+    if comment.post_id != post.id:
+        return False
+
+    post.answer_id = comment.id
+
+    return f"Post: {post.id} answer set to Comment: {comment.id}"
 
 
 @errorHandler("post")
 def close_or_open_post(session: Session, post_id, currentUser):
-    schemas = [PostSchema(), UserSchema()]
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    user = session.get(User, currentUser)
 
-    jsonPost = schemas[0].dump(post)
-    jsonUser = schemas[1].dump(user)
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
 
-    if jsonPost["id"] not in jsonUser["posts"]:
+    if jsonPost["user_id"] != jsonUser["id"]:
         return False
 
-    post.closed = not jsonPost["closed"]
+    post.is_closed = not jsonPost["is_closed"]
 
-    return f"Post: {jsonPost['id']} is now {not jsonPost['closed']}"
+    return f"Post: {jsonPost['id']} is now {not jsonPost['is_closed']}"
 
 
 @errorHandler("post")
 def view_post(session: Session, post_id, currentUser):
-    schemas = [PostSchema(), UserSchema()]
-    post = session.query(Post).get(post_id)
-    user = session.query(User).get(currentUser)
+    post = session.get(Post, post_id)
+    user = session.get(User, currentUser)
 
-    jsonPost = schemas[0].dump(post)
-    jsonUser = schemas[1].dump(user)
+    jsonPost = post.model_dump()
+    jsonUser = user.model_dump()
 
-    for view in jsonPost["views"]:
-        if view == jsonUser["id"]:
+    for view in post.views:
+        if view.id == jsonUser["id"]:
             return False
 
     post.views.append(user)
 
-    return f"Post: {jsonPost['tittle']} Viewed by User: {jsonUser['username']}"
+    return f"Post: {jsonPost['title']} Viewed by User: {jsonUser['username']}"

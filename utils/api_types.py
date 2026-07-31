@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 
 
@@ -9,7 +10,7 @@ class PostRef(BaseModel):
     post_id: int
 
 class NewPost(BaseModel):
-    tittle: str
+    title: str
     content: str
 
 class CommentRef(BaseModel):
@@ -32,3 +33,40 @@ class NewUser(BaseModel):
 class UserPayload(BaseModel):
     user: str
     password: str
+
+
+# --- Response models ---
+
+class UserResponse(BaseModel):
+    id: int
+    nickname: str
+    username: str
+    email: str
+    created_at: datetime
+    updated_at: datetime
+
+class PostResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    is_closed: bool
+    answer_id: int | None
+    created_at: datetime
+    updated_at: datetime
+    user_id: int
+    user: UserResponse
+
+class CommentResponse(BaseModel):
+    id: int
+    content: str
+    post_id: int
+    user_id: int
+    created_at: datetime
+    updated_at: datetime
+    user: UserResponse | None = None
+
+class MessageResponse(BaseModel):
+    message: str
+
+class LoggedResponse(BaseModel):
+    res: str
