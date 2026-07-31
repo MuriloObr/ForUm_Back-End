@@ -15,3 +15,6 @@ Algumas libs que usei além são:
 ### Framework
 **FastAPI** - API
 **SQLAlchemy** - ORM
+
+#### Archived
+Movido para outro [repositório](https://github.com/MuriloObr/ForUm)
